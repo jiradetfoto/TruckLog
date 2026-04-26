@@ -1,0 +1,407 @@
+/* ============================================================
+   TruckLog Pro — Page-specific styles
+   ============================================================ */
+
+/* ============================================================
+   DASHBOARD PAGE
+   ============================================================ */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-md);
+}
+.dashboard-grid .col-span-2 { grid-column: span 2; }
+.dashboard-grid .col-span-3 { grid-column: span 2; }
+
+/* Force 3-column KPI on dashboard */
+.kpi-grid {
+  grid-template-columns: repeat(3, 1fr) !important;
+}
+
+/* Active trip banner */
+.active-trip-banner {
+  background: linear-gradient(135deg, rgba(34,197,94,0.12), rgba(6,182,212,0.08));
+  border: 1px solid rgba(34,197,94,0.3);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md) var(--space-lg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+  animation: fadeIn 0.3s ease;
+}
+.active-trip-banner.hidden { display: none; }
+.trip-banner-info { display: flex; align-items: center; gap: var(--space-md); }
+.trip-banner-route {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.trip-banner-sub { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+.trip-banner-stats {
+  display: flex;
+  gap: var(--space-lg);
+  font-family: var(--font-en);
+}
+.trip-banner-stat { text-align: right; }
+.trip-banner-stat-label { font-size: 0.7rem; color: var(--text-muted); display: block; }
+.trip-banner-stat-value { font-size: 1.1rem; font-weight: 700; color: var(--green); }
+
+/* Recent trips mini-list */
+.trip-mini-list { display: flex; flex-direction: column; gap: var(--space-sm); }
+.trip-mini-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--bg-elevated);
+  border-radius: var(--radius-md);
+  transition: background var(--transition);
+}
+.trip-mini-item:hover { background: var(--bg-hover); cursor: pointer; }
+.trip-mini-route {
+  flex: 1;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.trip-mini-sub { font-size: 0.72rem; color: var(--text-muted); }
+.trip-mini-income {
+  font-family: var(--font-en);
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--green);
+}
+
+/* Chart wrapper */
+.chart-wrapper {
+  position: relative;
+  height: 200px;
+}
+.chart-wrapper canvas { max-height: 200px; }
+
+/* Company goal widget */
+.goal-widget { }
+.goal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: var(--space-sm);
+}
+.goal-current {
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-family: var(--font-en);
+  color: var(--text-primary);
+}
+.goal-target { font-size: 0.8rem; color: var(--text-muted); }
+.goal-pct { font-size: 0.85rem; font-weight: 600; color: var(--accent); }
+
+/* ============================================================
+   TRIPS PAGE
+   ============================================================ */
+.trips-filter-bar {
+  display: flex;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+  flex-wrap: wrap;
+}
+.trips-filter-bar input,
+.trips-filter-bar select {
+  width: auto;
+  min-width: 140px;
+}
+
+.trip-row-income  { color: var(--green) !important; font-family: var(--font-en); font-weight: 600; }
+.trip-row-expense { color: var(--red) !important; font-family: var(--font-en); font-weight: 600; }
+.trip-row-profit  { font-family: var(--font-en); font-weight: 700; }
+.trip-row-profit.pos { color: var(--green); }
+.trip-row-profit.neg { color: var(--red); }
+
+/* Trip detail card */
+.trip-detail {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+}
+.trip-detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--space-xs) 0;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 0.85rem;
+}
+.trip-detail-row:last-child { border-bottom: none; }
+.trip-detail-label { color: var(--text-secondary); }
+.trip-detail-value { font-family: var(--font-en); font-weight: 500; }
+
+/* ============================================================
+   LEDGER PAGE
+   ============================================================ */
+.ledger-balance-header {
+  background: linear-gradient(135deg, var(--bg-card), var(--bg-elevated));
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg) var(--space-xl);
+  margin-bottom: var(--space-lg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ledger-balance-label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.ledger-balance-value {
+  font-size: 2.2rem;
+  font-weight: 700;
+  font-family: var(--font-en);
+  color: var(--green);
+  margin-top: 4px;
+}
+.ledger-balance-value.negative { color: var(--red); }
+
+.ledger-summary {
+  display: flex;
+  gap: var(--space-xl);
+}
+.ledger-summary-item { text-align: right; }
+.ledger-summary-label { font-size: 0.75rem; color: var(--text-muted); }
+.ledger-summary-value { font-size: 1.1rem; font-weight: 700; font-family: var(--font-en); }
+.ledger-income-total { color: var(--green); }
+.ledger-expense-total { color: var(--red); }
+
+/* Ledger table row types */
+.ledger-row-income td:first-child { border-left: 2px solid var(--green); }
+.ledger-row-expense td:first-child { border-left: 2px solid var(--red); }
+.ledger-row-fine td:first-child { border-left: 2px solid var(--yellow); }
+.ledger-row-toll td:first-child { border-left: 2px solid var(--orange); }
+.ledger-row-sub { background: rgba(255,255,255,0.01) !important; }
+.ledger-row-sub td { padding-top: 5px !important; padding-bottom: 5px !important; color: var(--text-muted); font-size: 0.8rem; }
+.ledger-row-sub td:first-child { padding-left: 32px !important; }
+
+/* ============================================================
+   DRIVERS PAGE
+   ============================================================ */
+.driver-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-md);
+}
+.driver-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  transition: all var(--transition);
+}
+.driver-card:hover { border-color: var(--border-light); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+.driver-card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+.driver-avatar {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), #6366f1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+.driver-avatar.ai { background: linear-gradient(135deg, var(--purple), #6366f1); }
+.driver-name { font-size: 0.95rem; font-weight: 600; }
+.driver-type { font-size: 0.75rem; color: var(--text-muted); }
+
+.driver-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+.driver-stat { background: var(--bg-elevated); border-radius: var(--radius-sm); padding: var(--space-sm); text-align: center; }
+.driver-stat-label { font-size: 0.68rem; color: var(--text-muted); display: block; }
+.driver-stat-value { font-size: 0.95rem; font-weight: 600; font-family: var(--font-en); }
+
+/* Driver XP Bar */
+.driver-xp { margin-top: var(--space-sm); }
+.driver-xp-label { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted); margin-bottom: 4px; }
+
+/* ============================================================
+   FLEET PAGE
+   ============================================================ */
+.fleet-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-md);
+}
+.fleet-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: all var(--transition);
+}
+.fleet-card:hover { border-color: var(--border-light); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+.fleet-card-header {
+  background: linear-gradient(135deg, var(--bg-elevated), var(--bg-hover));
+  padding: var(--space-md) var(--space-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.truck-icon { font-size: 2rem; }
+.truck-name { font-size: 0.95rem; font-weight: 600; }
+.truck-model { font-size: 0.78rem; color: var(--text-muted); }
+
+.fleet-card-body { padding: var(--space-md) var(--space-lg); }
+.fleet-wear-section { margin-bottom: var(--space-md); }
+.fleet-wear-title { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-sm); }
+
+.fleet-card-footer {
+  padding: var(--space-sm) var(--space-lg);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.fleet-odometer { font-family: var(--font-en); font-size: 0.85rem; color: var(--text-secondary); }
+
+/* ============================================================
+   ANALYTICS PAGE
+   ============================================================ */
+.analytics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+}
+.analytics-grid .full-width { grid-column: 1 / -1; }
+.chart-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+}
+.chart-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-md);
+}
+
+/* Route rank list */
+.route-rank-list { display: flex; flex-direction: column; gap: var(--space-sm); }
+.route-rank-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-sm);
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+}
+.route-rank-num {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--bg-hover);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-family: var(--font-en);
+  flex-shrink: 0;
+}
+.route-rank-num.gold   { background: var(--yellow-dim); color: var(--yellow); }
+.route-rank-num.silver { background: rgba(156,163,175,0.2); color: #9ca3af; }
+.route-rank-num.bronze { background: var(--orange-dim); color: var(--orange); }
+
+.route-rank-name { flex: 1; font-size: 0.85rem; }
+.route-rank-profit { font-family: var(--font-en); font-weight: 600; color: var(--green); }
+.route-rank-bar { flex: 1; }
+
+/* ============================================================
+   FINES & TOLL PAGE
+   ============================================================ */
+.fines-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.fine-type-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 0.78rem; }
+
+/* ============================================================
+   SETTINGS PAGE
+   ============================================================ */
+.settings-layout {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: var(--space-lg);
+  align-items: start;
+}
+.settings-sidebar-nav { display: flex; flex-direction: column; gap: 2px; }
+.settings-nav-item {
+  padding: 8px var(--space-md);
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  transition: all var(--transition);
+  cursor: pointer;
+}
+.settings-nav-item:hover { background: var(--bg-elevated); color: var(--text-primary); }
+.settings-nav-item.active { background: var(--bg-elevated); color: var(--accent-hover); font-weight: 500; }
+
+.settings-section { display: flex; flex-direction: column; gap: var(--space-md); }
+.settings-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+}
+.settings-panel-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: var(--space-md);
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+/* Rate table */
+.rate-table { width: 100%; }
+.rate-table td { padding: var(--space-sm); }
+.rate-table td:first-child { font-size: 0.85rem; color: var(--text-secondary); }
+.rate-table input { width: 100px; }
+
+/* Connection status widget */
+.connection-widget {
+  background: var(--bg-elevated);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+.connection-status-text { flex: 1; font-size: 0.85rem; }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1100px) {
+  .dashboard-grid { grid-template-columns: 1fr 1fr; }
+  .dashboard-grid .col-span-3 { grid-column: span 2; }
+  .analytics-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  .sidebar { position: fixed; transform: translateX(-100%); }
+  .sidebar.mobile-open { transform: translateX(0); }
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .dashboard-grid .col-span-2,
+  .dashboard-grid .col-span-3 { grid-column: span 1; }
+  .settings-layout { grid-template-columns: 1fr; }
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .form-row, .form-row-3 { grid-template-columns: 1fr; }
+  .live-ticker { display: none; }
+}

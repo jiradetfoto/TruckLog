@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TruckLog Pro — ระบบบริหารบริษัทขนส่ง</title>
+  <meta name="description" content="แอพบันทึกและวิเคราะห์ข้อมูลการขนส่งจาก ETS2 และ ATS คำนวณต้นทุน-รายได้อิงราคาโลกจริง" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/pages.css" />
+</head>
+<body>
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <div class="logo-icon">🚛</div>
+        <div class="logo-text">
+          <span class="logo-title">TruckLog Pro</span>
+          <span class="logo-sub" id="company-name-sidebar">บริษัทของฉัน</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Game Status Badge -->
+    <div class="game-status" id="game-status-badge">
+      <div class="status-dot disconnected" id="status-dot"></div>
+      <span id="status-text">ไม่ได้เชื่อมต่อ</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" data-page="dashboard" id="nav-dashboard">
+        <span class="nav-icon">📊</span>
+        <span class="nav-label">Dashboard</span>
+      </a>
+      <a href="#" class="nav-item" data-page="trips" id="nav-trips">
+        <span class="nav-icon">🗺️</span>
+        <span class="nav-label">บันทึกเที่ยววิ่ง</span>
+      </a>
+      <a href="#" class="nav-item" data-page="ledger" id="nav-ledger">
+        <span class="nav-icon">📒</span>
+        <span class="nav-label">สมุดบัญชี</span>
+      </a>
+      <a href="#" class="nav-item" data-page="drivers" id="nav-drivers">
+        <span class="nav-icon">👤</span>
+        <span class="nav-label">คนขับ & AI Driver</span>
+      </a>
+      <a href="#" class="nav-item" data-page="fleet" id="nav-fleet">
+        <span class="nav-icon">🚚</span>
+        <span class="nav-label">กองรถ (Fleet)</span>
+      </a>
+      <a href="#" class="nav-item" data-page="analytics" id="nav-analytics">
+        <span class="nav-icon">📈</span>
+        <span class="nav-label">วิเคราะห์ข้อมูล</span>
+      </a>
+      <a href="#" class="nav-item" data-page="fines" id="nav-fines">
+        <span class="nav-icon">⚠️</span>
+        <span class="nav-label">ค่าปรับ & Toll</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="#" class="nav-item" data-page="settings" id="nav-settings">
+        <span class="nav-icon">⚙️</span>
+        <span class="nav-label">ตั้งค่า</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content" id="main-content">
+    <!-- Top Bar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">☰</button>
+        <h1 class="page-title" id="page-title">Dashboard</h1>
+      </div>
+      <div class="topbar-right">
+        <div class="live-ticker" id="live-ticker">
+          <span class="ticker-label">🕐 เวลาเกม:</span>
+          <span class="ticker-value" id="ticker-game-time">--:--</span>
+          <span class="ticker-sep">|</span>
+          <span class="ticker-label">⚡</span>
+          <span class="ticker-value" id="ticker-speed">0 km/h</span>
+          <span class="ticker-sep">|</span>
+          <span class="ticker-label">⛽</span>
+          <span class="ticker-value" id="ticker-fuel">--%</span>
+        </div>
+        <div class="currency-badge" id="currency-badge">THB</div>
+      </div>
+    </header>
+
+    <!-- Page Content Area -->
+    <div class="page-content" id="page-content">
+      <!-- Pages injected by JS -->
+    </div>
+  </main>
+
+  <!-- Toast Notifications -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Modal Overlay -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal" id="modal">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-title"></h3>
+        <button class="modal-close" id="modal-close">✕</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-footer" id="modal-footer"></div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/db.js"></script>
+  <script src="js/telemetry.js"></script>
+  <script src="js/rates.js"></script>
+  <script src="js/calculator.js"></script>
+  <script src="js/pages/dashboard.js"></script>
+  <script src="js/pages/trips.js"></script>
+  <script src="js/pages/ledger.js"></script>
+  <script src="js/pages/drivers.js"></script>
+  <script src="js/pages/fleet.js"></script>
+  <script src="js/pages/analytics.js"></script>
+  <script src="js/pages/fines.js"></script>
+  <script src="js/pages/settings.js"></script>
+  <script src="js/demo.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
