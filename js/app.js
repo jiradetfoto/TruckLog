@@ -10,6 +10,7 @@ const PAGES = {
   fleet:     { page: FleetPage,     title: 'กองรถ (Fleet)',     navId: 'nav-fleet' },
   analytics: { page: AnalyticsPage, title: 'วิเคราะห์ข้อมูล',  navId: 'nav-analytics' },
   fines:     { page: FinesPage,     title: 'ค่าปรับ & Toll',    navId: 'nav-fines' },
+  bank:      { page: BankPage,      title: 'ธนาคาร & สินเชื่อ', navId: 'nav-bank' },
   settings:  { page: SettingsPage,  title: 'ตั้งค่า',           navId: 'nav-settings' },
 };
 
@@ -119,6 +120,10 @@ const App = {
     const keys = ['currency','mode','fuelPrice','repairEngine','repairChassis','repairTrailer','truckPrice','truckLifeKm','companyName','mainGame','customRates','telemetryUrl'];
     const s = {};
     for (const k of keys) s[k] = await db.getSetting(k);
+    
+    // Fetch owned fleet for ownership verification
+    s.ownedTrucks   = await db.getAllTrucks();
+    
     s.currency      = s.currency || 'THB';
     s.mode          = s.mode     || 'ownerOp';
     s.fuelPrice     = s.fuelPrice     ?? RATES[s.currency]?.defaultFuelPrice ?? 30;
@@ -178,6 +183,7 @@ const App = {
       const settings = await this.getSettings();
       const cargoType = detectCargoType(data.startData?.cargo || '');
       const cargoInfo = RATES[settings.currency]?.cargoTypes?.[cargoType];
+      
       const trip = {
         game:        data.game || telemetry.game,
         source:      data.startData?.source      || '?',
@@ -187,19 +193,36 @@ const App = {
         massT:       data.startData?.mass || 0,
         distanceKm:  data.distanceKm,
         fuelUsed:    data.fuelUsed,
+        durationMin: (new Date(data.realTimeEnd) - new Date(data.startData?.realTime)) / (1000 * 60),
         wearDeltaEngine:  Math.round((data.wearEngine  || 0) * 100),
         wearDeltaChassis: Math.round((data.wearChassis || 0) * 100),
         wearDeltaTrailer: Math.round((data.wearTrailer || 0) * 100),
+        truckBrand:  data.startData?.truckBrand,
+        truckModel:  data.startData?.truckModel,
+        isQuickJob:  data.startData?.isQuickJob,
         tollTotal:   0,
         fineTotal:   0,
         ferryTotal:  0,
         date:        data.startData?.realTime || new Date().toISOString(),
         realTimeEnd: data.realTimeEnd,
       };
+
       const id = await db.addTrip(trip);
       const pnl = calculator.calcTripPnL(trip, settings);
-      await db.addLedgerEntry({ type: 'trip', tripId: id, desc: `งาน: ${trip.source} → ${trip.destination}`, income: pnl.income, expense: pnl.totalExpenses, date: trip.date });
-      this.toast(`✅ บันทึกเที่ยววิ่ง: ${trip.source} → ${trip.destination} | กำไร: ${Calculator.fmt(pnl.profit, settings.currency)}`, 'success', 5000);
+      
+      let ledgerDesc = `งาน: ${trip.source} → ${trip.destination}`;
+      if (pnl.isRental) ledgerDesc += ` (เช่ารถ ${trip.truckBrand})`;
+      
+      await db.addLedgerEntry({ type: 'trip', tripId: id, desc: ledgerDesc, income: pnl.income, expense: pnl.totalExpenses, date: trip.date });
+      
+      if (pnl.isRental) {
+        this.toast(`⚠️ งานนี้หักค่าเช่ารถ ${Calculator.fmt(pnl.rentalFee, settings.currency)} เนื่องจากยังไม่ได้ซื้อรถ ${trip.truckBrand} ในแอพ`, 'warning', 6000);
+      }
+      
+      // 4. Process Loan Payments (Check if any installment is due)
+      await this.processLoanPayments();
+      
+      this.toast(`✅ บันทึกเที่ยววิ่งสำเร็จ | กำไร: ${Calculator.fmt(pnl.profit, settings.currency)}`, 'success', 5000);
       if (this.currentPage === 'dashboard') this.navigate('dashboard');
     });
 
@@ -227,6 +250,41 @@ const App = {
       await db.addFineEntry({ fineType: 'train', amount: data.amount, game: telemetry.game, date: data.time, route: `${data.source} → ${data.target}` });
       this.toast(`🚂 Train: ${data.source} → ${data.target} | ${Calculator.fmt(data.amount, settings.currency)}`, 'info', 3000);
     });
+  },
+
+  async processLoanPayments() {
+    const loans = (await db.getAllLoans()).filter(l => l.status === 'active');
+    if (loans.length === 0) return;
+
+    const now = new Date();
+    for (const loan of loans) {
+      // Logic: Pay one installment for every 3 in-game days or simply per real-world day 
+      // (For now, let's keep it simple: if last payment was > 24 hours ago, pay one installment)
+      const lastPay = loan.lastPaymentDate ? new Date(loan.lastPaymentDate) : new Date(loan.startDate);
+      const hoursSince = (now - lastPay) / (1000 * 60 * 60);
+
+      if (hoursSince >= 24 && loan.remainingInstallments > 0) {
+        loan.remainingInstallments--;
+        loan.remainingAmount -= loan.monthlyPayment;
+        loan.lastPaymentDate = now.toISOString();
+        
+        if (loan.remainingInstallments === 0) {
+          loan.status = 'finished';
+          this.toast(`🎉 สินเชื่อรถ ${loan.truckName} ผ่อนชำระครบถ้วนแล้ว!`, 'success', 7000);
+        } else {
+          this.toast(`🏦 ธนาคารหักค่างวดรถ ${loan.truckName}: ${Calculator.fmt(loan.monthlyPayment, App._settingsCache.currency)}`, 'info', 5000);
+        }
+
+        await db.updateLoan(loan);
+        await db.addLedgerEntry({
+          type: 'expense',
+          desc: `ค่างวดรถ: ${loan.truckName} (${loan.totalInstallments - loan.remainingInstallments}/${loan.totalInstallments})`,
+          income: 0,
+          expense: loan.monthlyPayment,
+          date: now.toISOString()
+        });
+      }
+    }
   },
 
   _updateStatusUI() {

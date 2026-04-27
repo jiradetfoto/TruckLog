@@ -214,28 +214,108 @@ const FleetPage = {
   },
 
   openAdd() {
-    App.openModal('เพิ่มรถในกอง', `
-      <div class="form-group"><label class="form-label">ชื่อรถ / เลขทะเบียน</label><input type="text" id="t-name" placeholder="เช่น รถคัน 1 หรือ กข-1234"></div>
-      <div class="form-group"><label class="form-label">รุ่นรถ</label><input type="text" id="t-model" placeholder="เช่น Scania R 730"></div>
+    const s = App._settingsCache;
+    const cur = s.currency || 'THB';
+    const brands = Object.entries(TRUCK_MARKET.brands).map(([k,v]) => `<option value="${k}">${v.label}</option>`).join('');
+    
+    App.openModal('ซื้อรถเข้ากอง (Truck Marketplace)', `
+      <div class="form-group">
+        <label class="form-label">ยี่ห้อ</label>
+        <select id="t-brand" onchange="FleetPage.updateModels()">${brands}</select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">รุ่น</label>
+        <select id="t-model"></select>
+      </div>
       <div class="form-row">
-        <div class="form-group"><label class="form-label">ราคารถ</label><input type="number" id="t-price" placeholder="3000000"></div>
-        <div class="form-group"><label class="form-label">อายุการใช้งาน (km)</label><input type="number" id="t-life" placeholder="1000000"></div>
+        <div class="form-group">
+          <label class="form-label">สภาพรถ</label>
+          <select id="t-condition" onchange="FleetPage.updatePrice()">
+            <option value="new">🆕 รถใหม่</option>
+            <option value="used">🛣️ รถมือสอง</option>
+          </select>
+        </div>
+        <div class="form-group" id="odo-group" style="display:none">
+          <label class="form-label">ระยะทางที่วิ่งมาแล้ว (km)</label>
+          <input type="number" id="t-odo" value="100000" oninput="FleetPage.updatePrice()">
+        </div>
+      </div>
+      <div style="background:var(--bg-elevated);padding:var(--space-md);border-radius:var(--radius-md);margin-top:var(--space-md);text-align:center">
+        <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:4px">ราคาประเมินตลาด</div>
+        <div id="t-price-display" style="font-size:1.5rem;font-weight:700;color:var(--green)">฿0.00</div>
       </div>
     `, [
       { label: 'ยกเลิก', cls: 'btn-secondary', action: () => App.closeModal() },
-      { label: '💾 บันทึก', cls: 'btn-primary', action: () => FleetPage._saveTruck() },
+      { label: '💰 กู้ธนาคาร', cls: 'btn-ghost', action: () => FleetPage._applyForLoan() },
+      { label: '🛒 ซื้อเงินสด', cls: 'btn-primary', action: () => FleetPage._saveTruck() },
     ]);
+    this.updateModels();
+  },
+
+  _applyForLoan() {
+    const brandKey = document.getElementById('t-brand').value;
+    const brand = TRUCK_MARKET.brands[brandKey].label;
+    const model = document.getElementById('t-model').value;
+    const cond  = document.getElementById('t-condition').value;
+    const odo   = cond === 'used' ? parseFloat(document.getElementById('t-odo').value) : 0;
+    const price = this._lastCalculatedPrice;
+
+    const truckData = { brand, model, isUsed: cond === 'used', startingOdo: odo };
+    App.closeModal();
+    BankPage.openLoanModal(truckData, price);
+  },
+
+  updateModels() {
+    const brand = document.getElementById('t-brand').value;
+    const info = TRUCK_MARKET.brands[brand];
+    const modelEl = document.getElementById('t-model');
+    modelEl.innerHTML = info.models.map(m => `<option value="${m}">${m}</option>`).join('');
+    this.updatePrice();
+  },
+
+  updatePrice() {
+    const brand = document.getElementById('t-brand').value;
+    const cond = document.getElementById('t-condition').value;
+    const odo = cond === 'used' ? parseFloat(document.getElementById('t-odo').value) : 0;
+    const s = App._settingsCache;
+    const cur = s.currency || 'THB';
+    
+    document.getElementById('odo-group').style.display = cond === 'used' ? 'block' : 'none';
+    
+    let price = 0;
+    if (cond === 'new') {
+      price = TRUCK_MARKET.brands[brand].newPrice;
+      if (cur === 'THB') price *= 35;
+      if (cur === 'EUR') price *= 0.92;
+    } else {
+      price = calcUsedTruckPrice(brand, odo, cur);
+    }
+    
+    document.getElementById('t-price-display').textContent = Calculator.fmt(price, cur);
+    this._lastCalculatedPrice = price;
   },
 
   async _saveTruck() {
-    const name  = document.getElementById('t-name')?.value.trim();
-    const model = document.getElementById('t-model')?.value.trim();
-    const price = parseFloat(document.getElementById('t-price')?.value) || 0;
-    const life  = parseFloat(document.getElementById('t-life')?.value)  || 0;
-    if (!name) { App.toast('กรุณาใส่ชื่อรถ', 'error'); return; }
-    await db.addTruck({ name, model, price, lifeKm: life, addedAt: new Date().toISOString() });
+    const brandKey = document.getElementById('t-brand').value;
+    const brand = TRUCK_MARKET.brands[brandKey].label;
+    const model = document.getElementById('t-model').value;
+    const cond  = document.getElementById('t-condition').value;
+    const odo   = cond === 'used' ? parseFloat(document.getElementById('t-odo').value) : 0;
+    const price = this._lastCalculatedPrice;
+    
+    await db.addTruck({ 
+      name: `${brand} ${model}`,
+      brand, 
+      model, 
+      buyPrice: price, 
+      isUsed: cond === 'used',
+      startingOdo: odo,
+      lifeKm: 1000000, 
+      addedAt: new Date().toISOString() 
+    });
+    
     App.closeModal();
-    App.toast('เพิ่มรถแล้ว ✅', 'success');
+    App.toast('ซื้อรถเข้ากองสำเร็จ! 🎉', 'success');
     App.navigate('fleet');
   },
 

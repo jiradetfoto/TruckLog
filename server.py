@@ -44,9 +44,9 @@ class TruckLogHandler(http.server.SimpleHTTPRequestHandler):
                     "trips": [],
                     "ledger": [],
                     "trucks": [],
-                    "drivers": [],
                     "fines": [],
-                    "fuelLog": []
+                    "fuelLog": [],
+                    "loans": []
                 }
                 self.wfile.write(json.dumps(initial_data).encode())
         else:

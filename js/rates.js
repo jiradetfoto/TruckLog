@@ -79,6 +79,58 @@ const GAME_CURRENCIES = {
   ats:  ['USD', 'THB'],
 };
 
+/* ============================================================
+   Truck Market & Rental Data (Real-world based)
+   ============================================================ */
+
+const TRUCK_MARKET = {
+  // Base prices for New trucks (approximate USD)
+  // Conversion to THB/EUR happens during purchase
+  brands: {
+    'scania':    { label: 'Scania',    models: ['R Series', 'S Series', 'G Series'], newPrice: 160000 },
+    'volvo':     { label: 'Volvo',     models: ['FH16', 'FH', 'FM'],                newPrice: 155000 },
+    'man':       { label: 'MAN',       models: ['TGX', 'TGS'],                      newPrice: 145000 },
+    'mercedes':  { label: 'Mercedes',  models: ['Actros', 'Arocs'],                newPrice: 150000 },
+    'daf':       { label: 'DAF',       models: ['XF', 'XG', 'XG+'],                newPrice: 140000 },
+    'renault':   { label: 'Renault',   models: ['T High', 'T Range'],              newPrice: 135000 },
+    'iveco':     { label: 'Iveco',     models: ['S-Way', 'Stralis'],               newPrice: 130000 },
+    // ATS Brands
+    'peterbilt': { label: 'Peterbilt', models: ['579', '389', '567'],              newPrice: 170000 },
+    'kenworth':  { label: 'Kenworth',  models: ['W900', 'T680', 'T880'],            newPrice: 170000 },
+    'freightliner': { label: 'Freightliner', models: ['Cascadia'],                 newPrice: 155000 },
+    'westernstar':  { label: 'Western Star', models: ['49X', '57X'],               newPrice: 165000 },
+    'mack':      { label: 'Mack',      models: ['Anthem', 'Pinnacle'],             newPrice: 150000 },
+    'international': { label: 'International', models: ['LT', 'Lonestar'],         newPrice: 145000 },
+  }
+};
+
+const RENTAL_RATES = {
+  USD: { daily: 150, perKm: 0.15 }, // approx $150/day + $0.25/mile
+  EUR: { daily: 130, perKm: 0.12 },
+  THB: { daily: 4500, perKm: 4.5 },
+};
+
+/* Depreciation Formula
+   Used Price = New Price * (0.9 ^ (YearsOld)) * (DepreciationFactor based on Odo)
+   We simplify: New Price - ($0.15 per km driven)
+*/
+function calcUsedTruckPrice(brandKey, odoKm, currency) {
+  const info = TRUCK_MARKET.brands[brandKey.toLowerCase()];
+  if (!info) return 0;
+  
+  // Convert new price to current currency (roughly)
+  let price = info.newPrice;
+  if (currency === 'THB') price *= 35;
+  if (currency === 'EUR') price *= 0.92;
+
+  // Depreciation: Lose 15% immediately, then lose value per km
+  let usedPrice = price * 0.85;
+  const depPerKm = (currency === 'THB' ? 4 : currency === 'USD' ? 0.12 : 0.10);
+  usedPrice -= (odoKm * depPerKm);
+
+  return Math.max(usedPrice, price * 0.2); // Don't go below 20% value
+}
+
 /* Fine type labels (Thai) */
 const FINE_LABELS = {
   'speeding_camera':          { label: 'กล้องจับความเร็ว',      icon: '📷' },

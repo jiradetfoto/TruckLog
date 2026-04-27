@@ -11,7 +11,8 @@ class Database {
       trucks: [],
       drivers: [],
       fines: [],
-      fuelLog: []
+      fuelLog: [],
+      loans: []
     };
     
     // Auto-detect API endpoint
@@ -188,6 +189,26 @@ class Database {
     return entry.id;
   }
   async getAllFuelLog() { return this.data.fuelLog; }
+
+  // Loans
+  async getAllLoans() { return this.data.loans || []; }
+  async addLoan(loan) {
+    loan.id = Date.now();
+    loan.status = loan.status || 'active';
+    this.data.loans = this.data.loans || [];
+    this.data.loans.push(loan);
+    await this.sync();
+    return loan.id;
+  }
+  async updateLoan(loan) {
+    const idx = this.data.loans.findIndex(l => l.id === loan.id);
+    if (idx !== -1) this.data.loans[idx] = loan;
+    return this.sync();
+  }
+  async deleteLoan(id) {
+    this.data.loans = this.data.loans.filter(l => l.id !== id);
+    return this.sync();
+  }
 }
 
 // Singleton

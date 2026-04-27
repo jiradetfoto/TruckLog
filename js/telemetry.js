@@ -99,7 +99,15 @@ class TelemetryClient {
     switch (eventName) {
       case 'job_started':
         this._jobActive = true;
-        this._jobStartData = { ...data, realTime: new Date().toISOString(), fuelAtStart: this.data?.truck?.fuel?.value || 0, odoAtStart: this.data?.truck?.odometer || 0 };
+        this._jobStartData = { 
+          ...data, 
+          realTime: new Date().toISOString(), 
+          fuelAtStart: this.data?.truck?.fuel?.value || 0, 
+          odoAtStart: this.data?.truck?.odometer || 0,
+          truckBrand: this.data?.truck?.make || this.data?.truck?.brand,
+          truckModel: this.data?.truck?.model,
+          isQuickJob: this.data?.job?.isQuickJob || false
+        };
         this.emit('jobStarted', this._jobStartData);
         break;
 
@@ -171,6 +179,9 @@ class TelemetryClient {
         fuelAtStart: msg.truck?.fuel?.value || 0,
         odoAtStart: msg.truck?.odometer || 0,
         gameIncome: msg.job?.income || 0,
+        truckBrand: msg.truck?.make || msg.truck?.brand,
+        truckModel: msg.truck?.model,
+        isQuickJob: msg.job?.isQuickJob || false
       };
       this.emit('jobStarted', this._jobStartData);
     } else if (!jobActive && this._jobActive) {
